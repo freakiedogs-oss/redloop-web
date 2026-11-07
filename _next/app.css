@@ -10,9 +10,10 @@ label{display:block;margin:16px 0 4px;font-weight:600}input:not([type=file]),tex
 .fila{display:flex;gap:8px}.nota{color:var(--s);font-size:.9rem}.declaracion{padding:10px 14px;background:#fff;border:1px solid var(--a);border-radius:6px}.declaracion::first-letter{text-transform:uppercase}
 .portada{padding:14px 16px;background:#fff;border:2px solid var(--t);border-radius:6px}.portada h2{margin:0 0 6px}.portada p{margin:0}
 .marca{font-style:italic;color:var(--s)}.error,.invalido{padding:12px 16px;background:#fff;border:2px solid var(--a);border-radius:6px}.invalido h2{margin:0}
-.sonda{border-top:1px solid var(--l);padding:8px 0}.sonda summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px}.id{font-family:ui-monospace,Menlo,monospace}
+.sonda{border-top:1px solid var(--l);padding:8px 0}.sonda summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px}.sonda summary::before{content:"\25B8"}.sonda[open] summary::before{content:"\25BE"}.sonda .id{flex:1}.id{font-family:ui-monospace,Menlo,monospace}
 .v{font-weight:600}.v.reproducido{color:var(--a)}.v.inestable{color:#8a5a00}.v.no_reproducido,.v.no_determinado{color:var(--s)}
 .rotulo{margin:8px 0 2px;font-size:.8rem;color:var(--s);text-transform:uppercase;letter-spacing:.04em}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid var(--l);padding:8px;border-radius:6px;margin:0;font-size:.85rem}pre.endpoint{border-style:dashed}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--l);vertical-align:top}code{overflow-wrap:anywhere}
 footer{border-top:1px solid var(--l);padding:16px 20px;color:var(--s);font-size:.85rem;text-align:center}footer p{margin:4px 0}
+p{overflow-wrap:anywhere}#salida:focus{outline:none}#salida{scroll-margin-top:12px}
