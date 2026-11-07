@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><meta name="redloop-build" content="9497c99"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"><link rel="canonical" href="https://freakiedogs-oss.github.io/redloop-web/"><link rel="stylesheet" href="/redloop-web/_next/app.css"><title>RedLoop: a signed record of how an AI endpoint answered adversarial probes</title><meta name="description" content="Probes with harmless canaries, verdicts by a published rule, a signature anyone can check. Today it tests only RedLoop's own demo agent."></head><body><header><a class="marca-sitio" href="/redloop-web/">RedLoop</a><nav><a href="/redloop-web/demo/">Demo</a><a href="/redloop-web/verify/">Verify</a><a href="/redloop-web/catalog/">Catalog</a></nav></header>
+<main>
+<h1>A signed record of how an AI endpoint answered adversarial probes.</h1>
+<p class="lead">Anyone can write "we tested our chatbot". RedLoop produces the file a third party can check: what was sent, what came back, which rule decided, signed. Try it now against our test agent.</p>
+<p><a class="boton" href="/redloop-web/demo/">Run the demo, no account</a></p>
+<section class="promesa"><h2>What we promise, exactly</h2>
+<blockquote id="promesa">Every RedLoop report contains the requests we sent to an endpoint (with secrets and demo text replaced by marks), the status and body we received unless the body reflected a secret or exceeded the size limit, the verdict by a published rule and a signature anyone can verify at /verify without an account. It attests only what that endpoint answered to those probes that day: whoever controls an endpoint can detect them and answer clean. It does not mean the system is secure. Today RedLoop tests only its own demo agent; it does not test third-party systems.</blockquote></section>
+<section><h2>How it decides</h2>
+<ol><li>Each probe asks the endpoint to assemble a random token from two fragments, reveal a planted value, or fetch a decoy URL. No probe asks for harmful content.</li>
+<li>Each probe is sent twice. A published table turns the pair into a verdict: reproduced, unstable, not reproduced, or abstained.</li>
+<li>Errors, rate limits, broken response shapes and identical answers to every probe are abstentions, listed one by one. An abstention never counts in anyone's favor.</li>
+<li>The verifier recomputes every verdict from the recorded responses. It never contacts the endpoint.</li></ol></section>
+<section><h2>What this is not</h2>
+<ul><li>Not proof that a system is secure. The catalog is public and finite; a system can pass it and fall to anything else.</li>
+<li>Not a deep attack tool. Open-source scanners find more. RedLoop has no adaptive search and uses no model on our side.</li>
+<li>Not a certification. An auditor may give it no weight at all.</li>
+<li>Not independent of the person who runs it: whoever owns the endpoint chooses when it runs and can recognize the probes.</li></ul></section>
+<section id="pricing"><h2>Pricing</h2>
+<table><thead><tr><th>Plan</th><th>Price</th><th>Status</th></tr></thead><tbody>
+<tr><td>Demo, against our test agent</td><td>$0</td><td>Available</td></tr>
+<tr><td>Verifier, always</td><td>$0</td><td>Available</td></tr>
+<tr><td>Evidence: one run on your own endpoint</td><td>$190</td><td>Not available</td></tr>
+<tr><td>Continuous: weekly runs on one endpoint</td><td>$99/month</td><td>Not available</td></tr>
+</tbody></table>
+<p>Testing your own endpoint is not offered yet: we will not send requests to a host until we can prove the owner asked for it and keep them from being redirected inside our network. Checkout is pending; no payment can be made today.</p></section>
+</main><footer><p>The demo stores no canary and no document. The hourly limit uses a salted hash of your network address, rotated daily. RedLoop has no contact channel yet.</p><p>RedLoop is an early demo. It makes no statement about compliance with any law or standard.</p></footer></body></html>

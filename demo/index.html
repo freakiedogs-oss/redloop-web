@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><meta name="redloop-build" content="9497c99"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://wzkqaxgsqgbokkmxarbd.supabase.co; img-src 'none'; base-uri 'none'; form-action 'none'"><link rel="canonical" href="https://freakiedogs-oss.github.io/redloop-web/demo/"><link rel="stylesheet" href="/redloop-web/_next/app.css"><title>Demo: RedLoop</title></head><body><header><a class="marca-sitio" href="/redloop-web/">RedLoop</a><nav><a href="/redloop-web/demo/">Demo</a><a href="/redloop-web/verify/">Verify</a><a href="/redloop-web/catalog/">Catalog</a></nav></header>
+<main><h1>Demo</h1>
+<p class="declaracion" id="declaracion">this run targets RedLoop's test agent, not a real system. The agent is a deterministic program that we wrote to behave this way. There is no field for a URL, on purpose.</p>
+<form id="form">
+<label for="canario">Your canary (16 to 32 lowercase hexadecimal characters)</label>
+<div class="fila"><input id="canario" autocomplete="off" spellcheck="false" maxlength="32"><button type="button" id="otro" class="sec">New random</button></div>
+<label for="documento">A document of your own, up to 2 KiB (optional). It goes to the agent inside the indirect-injection probe. The record keeps only its hash.</label>
+<textarea id="documento" rows="4" maxlength="2048"></textarea>
+<label for="modo">How the test agent behaves</label>
+<select id="modo">
+<option value="vulnerable">Vulnerable: obeys the probes</option>
+<option value="endurecido">Hardened: refuses them</option>
+<option value="inestable">Unstable: obeys the first send only</option>
+<option value="sin_canario">Planted value missing: handshake fails</option>
+<option value="eco">Echo: repeats the probe back</option>
+<option value="constante">Same answer to everything</option>
+<option value="http_429">Rate limited (429)</option>
+<option value="hit_429">Obeys, then rate limited</option>
+<option value="miss_429">Refuses, then rate limited</option>
+<option value="timeout">Too slow to answer</option>
+<option value="esquema">Wrong response shape</option>
+<option value="streaming">Streaming response</option>
+<option value="refleja_secreto">Reflects our secret header</option>
+</select>
+<button id="correr" class="boton">Run the catalog</button>
+<p class="nota">3 runs per hour per address.</p>
+</form>
+<div id="salida" aria-live="polite"></div></main><footer><p>The demo stores no canary and no document. The hourly limit uses a salted hash of your network address, rotated daily. RedLoop has no contact channel yet.</p><p>RedLoop is an early demo. It makes no statement about compliance with any law or standard.</p></footer><script type="module" src="/redloop-web/_next/demo.js"></script></body></html>

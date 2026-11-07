@@ -1,0 +1,18 @@
+{
+  "keys": [
+    {
+      "key_id": "demo-781190648be47f2b",
+      "proposito": "demo",
+      "publica_b64": "LkrWsdEiKPoYjh3zksLlMnSYW8JRV04hS4J6qYy3S7g=",
+      "desde": "2026-11-06",
+      "hasta": null
+    },
+    {
+      "key_id": "catalog-2af31d1aad70a7fa",
+      "proposito": "catalog",
+      "publica_b64": "XSXtDnrBnfLNANWAWMJebtwvvC33aX6EvFqRxsKXpU0=",
+      "desde": "2026-11-06",
+      "hasta": null
+    }
+  ]
+}

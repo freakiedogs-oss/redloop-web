@@ -1,0 +1,18 @@
+:root{--t:#1c1c22;--s:#5a5a66;--l:#d8d8de;--f:#fafafb;--a:#7a1f2b}
+*{box-sizing:border-box}body{margin:0;font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t);background:var(--f)}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--l);flex-wrap:wrap;gap:8px}
+header nav a{margin-left:16px}a{color:var(--a)}.marca-sitio{font-weight:700;text-decoration:none;color:var(--t)}
+main{max-width:760px;margin:0 auto;padding:24px 20px 48px}h1{font-size:1.9rem;line-height:1.2}section{margin-top:32px}
+.lead{font-size:1.1rem;color:var(--s)}.boton{display:inline-block;background:var(--a);color:#fff;border:0;padding:10px 16px;border-radius:6px;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;margin:8px 8px 8px 0}.boton:disabled{opacity:.55}
+.sec{background:#fff;border:1px solid var(--l);border-radius:6px;padding:8px 12px;font:inherit;cursor:pointer}
+blockquote{margin:0;padding:12px 16px;border-left:3px solid var(--a);background:#fff}
+label{display:block;margin:16px 0 4px;font-weight:600}input:not([type=file]),textarea,select{width:100%;padding:8px;border:1px solid var(--l);border-radius:6px;font:inherit;background:#fff}
+.fila{display:flex;gap:8px}.nota{color:var(--s);font-size:.9rem}.declaracion{padding:10px 14px;background:#fff;border:1px solid var(--a);border-radius:6px}.declaracion::first-letter{text-transform:uppercase}
+.portada{padding:14px 16px;background:#fff;border:2px solid var(--t);border-radius:6px}.portada h2{margin:0 0 6px}.portada p{margin:0}
+.marca{font-style:italic;color:var(--s)}.error,.invalido{padding:12px 16px;background:#fff;border:2px solid var(--a);border-radius:6px}.invalido h2{margin:0}
+.sonda{border-top:1px solid var(--l);padding:8px 0}.sonda summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px}.id{font-family:ui-monospace,Menlo,monospace}
+.v{font-weight:600}.v.reproducido{color:var(--a)}.v.inestable{color:#8a5a00}.v.no_reproducido,.v.no_determinado{color:var(--s)}
+.rotulo{margin:8px 0 2px;font-size:.8rem;color:var(--s);text-transform:uppercase;letter-spacing:.04em}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid var(--l);padding:8px;border-radius:6px;margin:0;font-size:.85rem}pre.endpoint{border-style:dashed}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--l);vertical-align:top}code{overflow-wrap:anywhere}
+footer{border-top:1px solid var(--l);padding:16px 20px;color:var(--s);font-size:.85rem;text-align:center}footer p{margin:4px 0}
