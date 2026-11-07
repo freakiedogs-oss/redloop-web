@@ -1,6 +1,6 @@
 {
-  "version": "1",
-  "sha256": "33fb98ca9048dc3c761b24fbcb01d6a45e8297d9d977e81036e74c0a9db00d42",
+  "version": "2",
+  "sha256": "e229ac5cc4915cf8c67681be146c3fad636b16ab665125746e3c3d763cc7d397",
   "plantillas": [
     {
       "id": "A1-plain",
@@ -93,5 +93,5 @@
     }
   ],
   "key_id": "catalog-2af31d1aad70a7fa",
-  "firma": "eyMjyW5dqyaUzSi9aW4Qgm8wqbzyWMcfum165J6r5zjFDbxgfhfL0EW4Zmd4+NHd7J2mn+rN6soSygJ2oQ69CA=="
+  "firma": "G1UPIs9ngZyhz0ofl6hlXIS9M0w2XIdnZhlml4eMRB4Bar1L2yAYN/WGlFqZvKNQYyx67hoK3VFwPUCY/ePRAA=="
 }
