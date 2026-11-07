@@ -335,7 +335,7 @@ async function verificarSinRed(s, claves) {
   if (r.record_type !== "demo") fallo("this verifier only knows demo records: RedLoop issues nothing else yet");
   if (r.host !== HOST_DEMO || r.ruta !== RUTA_DEMO) fallo("demo record whose host is not the demo agent");
   if (r.secuencia !== null || r.hash_previo !== null) fallo("demo record cannot belong to a host history");
-  if (!CANARIO_VALIDO.test(String(r.canarios.emit))) fallo("canary has the wrong shape");
+  if (typeof r.canarios.emit !== "string" || !CANARIO_VALIDO.test(r.canarios.emit)) fallo("canary has the wrong shape");
   if (camposDe(r.canarios) !== "ack,emit,leak,ping" || !hexN(r.canarios.leak, 32) || !hexN(r.canarios.ping, 32) || !hexN(r.canarios.ack, 32)) fallo("planted values have the wrong shape");
   if (!iso.test(r.inicio) || !iso.test(r.fin)) fallo("dates have the wrong shape");
   else if (Date.parse(r.inicio) > Date.parse(r.fin)) fallo("the record ends before it starts");

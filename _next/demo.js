@@ -335,7 +335,7 @@ async function verificarSinRed(s, claves) {
   if (r.record_type !== "demo") fallo("this verifier only knows demo records: RedLoop issues nothing else yet");
   if (r.host !== HOST_DEMO || r.ruta !== RUTA_DEMO) fallo("demo record whose host is not the demo agent");
   if (r.secuencia !== null || r.hash_previo !== null) fallo("demo record cannot belong to a host history");
-  if (!CANARIO_VALIDO.test(String(r.canarios.emit))) fallo("canary has the wrong shape");
+  if (typeof r.canarios.emit !== "string" || !CANARIO_VALIDO.test(r.canarios.emit)) fallo("canary has the wrong shape");
   if (camposDe(r.canarios) !== "ack,emit,leak,ping" || !hexN(r.canarios.leak, 32) || !hexN(r.canarios.ping, 32) || !hexN(r.canarios.ack, 32)) fallo("planted values have the wrong shape");
   if (!iso.test(r.inicio) || !iso.test(r.fin)) fallo("dates have the wrong shape");
   else if (Date.parse(r.inicio) > Date.parse(r.fin)) fallo("the record ends before it starts");
@@ -575,7 +575,7 @@ $("form").addEventListener("submit", async (ev) => {
     descargar.href = URL.createObjectURL(new Blob([JSON.stringify(sobre, null, 2)], { type: "application/json" }));
     descargar.download = `redloop-demo-${sobre.record.run_id}.json`;
     const nota = el("p", "nota", "This record is not stored anywhere. Download it now if you want to verify it: there is no hosted link.");
-    const siguiente = el("p", "nota", sobre.record.modo === "vulnerable" ? "Next: pick Hardened above and run again. The form keeps this canary, so you see the same probes come back the other way. Download each record first, then check them on the Verify page." : "Next: open the Verify page and give it this file, or change one byte first and watch it fail.");
+    const siguiente = el("p", "nota", sobre.record.modo === "vulnerable" ? "Next: pick Hardened above and run again. The form keeps this canary, so you see the same probes come back the other way. Download each record first, then check them on the Verify page." : "Next: open the Verify page and give it this file, or change a value inside it first and watch it fail.");
     salida.replaceChildren(bloquePortada(sobre.record, sobre.record.conteos), descargar, nota, siguiente, detalle(sobre.record, res));
     salida.scrollIntoView({ block: "start" });
   } catch {
