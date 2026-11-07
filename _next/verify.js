@@ -273,7 +273,7 @@ async function verificarSinRed(s, claves) {
   const iso = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|\+00:00)$/;
   const hexN = (v, n) => typeof v === "string" && new RegExp(`^[0-9a-f]{${n}}$`).test(v);
   if (camposDe(s) !== "alg,firma,key_id,record") fallo("unknown fields in the envelope");
-  if (camposDe(r) !== "canarios,catalogo,conteos,envios,fin,hash_previo,hook_hits,host,inicio,modo,peticion,record_type,responses_digest,rules_version,ruta,run_id,schema_version,secuencia,target_kind,topes,user_supplied,veredictos") fallo("unknown fields in the record");
+  if (camposDe(r) !== "canarios,catalogo,conteos,envios,fin,hash_previo,hook_hits,host,inicio,modo,peticion,record_type,responses_digest,rules_version,run_id,ruta,schema_version,secuencia,target_kind,topes,user_supplied,veredictos") fallo("unknown fields in the record");
   if (r.record_type !== "demo") fallo("this verifier only knows demo records: RedLoop issues nothing else yet");
   if (r.host !== HOST_DEMO || r.ruta !== RUTA_DEMO) fallo("demo record whose host is not the demo agent");
   if (r.secuencia !== null || r.hash_previo !== null) fallo("demo record cannot belong to a host history");
