@@ -305,7 +305,8 @@ async function verificarSinRed(s2, claves) {
     if (e.resp_b64 !== null && await sha256Hex(deB64(e.resp_b64)) !== e.resp_sha256) fallo(`send ${e.id}: response hash does not match`);
   }
   const camposDe = (o) => Object.keys(o).sort().join(",");
-  const iso = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|\+00:00)$/;
+  const isoRe = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|\+00:00)$/;
+  const iso = { test: (v) => typeof v === "string" && isoRe.test(v) && !Number.isNaN(Date.parse(v)) };
   const hexN = (v, n) => typeof v === "string" && new RegExp(`^[0-9a-f]{${n}}$`).test(v);
   if (camposDe(s2) !== "alg,firma,key_id,record") fallo("unknown fields in the envelope");
   if (camposDe(r2) !== "canarios,catalogo,conteos,envios,fin,hash_previo,hook_hits,host,inicio,modo,peticion,record_type,responses_digest,rules_version,run_id,ruta,schema_version,secuencia,target_kind,topes,user_supplied,veredictos") fallo("unknown fields in the record");
@@ -314,9 +315,10 @@ async function verificarSinRed(s2, claves) {
   if (r2.secuencia !== null || r2.hash_previo !== null) fallo("demo record cannot belong to a host history");
   if (!CANARIO_VALIDO.test(String(r2.canarios.emit))) fallo("canary has the wrong shape");
   if (camposDe(r2.canarios) !== "ack,emit,leak,ping" || !hexN(r2.canarios.leak, 32) || !hexN(r2.canarios.ping, 32) || !hexN(r2.canarios.ack, 32)) fallo("planted values have the wrong shape");
-  if (!iso.test(String(r2.inicio)) || !iso.test(String(r2.fin))) fallo("dates have the wrong shape");
+  if (!iso.test(r2.inicio) || !iso.test(r2.fin)) fallo("dates have the wrong shape");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(String(r2.run_id))) fallo("run id has the wrong shape");
   if (!MODOS_DEMO.includes(r2.modo)) fallo("unknown agent mode");
+  if (camposDe(r2.catalogo) !== "sha256,version") fallo("unknown fields in the catalog block");
   if (canon(r2.topes) !== canon(TOPES)) fallo("limits differ from this verifier's limits");
   if (canon(r2.peticion) !== canon({ metodo: "POST", jsonpath: "$.reply", headers: headersDemo(r2.modo, r2.run_id) })) fallo("request description differs from the demo's");
   const u = r2.user_supplied;
@@ -337,8 +339,10 @@ async function verificarSinRed(s2, claves) {
     const x = esperados[i];
     if (camposDe(e) !== "causa_red,content_type,enviado,fin,hook_token,id,inicio,n,resp_b64,resp_sha256,sonda,status,tipo") fallo(`send ${i + 1}: unknown fields`);
     if (e.id !== `e${i + 1}`) fallo(`send ${i + 1}: wrong id`);
-    if (!iso.test(String(e.inicio)) || !iso.test(String(e.fin))) fallo(`send ${e.id}: dates have the wrong shape`);
-    if (e.status !== null && !Number.isSafeInteger(e.status)) fallo(`send ${e.id}: status has the wrong shape`);
+    if (!iso.test(e.inicio) || !iso.test(e.fin)) fallo(`send ${e.id}: dates have the wrong shape`);
+    if (e.status !== null && !(Number.isSafeInteger(e.status) && e.status >= 100 && e.status <= 599)) fallo(`send ${e.id}: status has the wrong shape`);
+    if (e.content_type !== null && !/^[\x20-\x7e]{0,128}$/.test(String(e.content_type))) fallo(`send ${e.id}: content type has the wrong shape`);
+    if (e.resp_b64 === null && e.resp_sha256 !== null) fallo(`send ${e.id}: a hash without a body`);
     if (e.causa_red !== null && !CAUSAS_RED.includes(e.causa_red)) fallo(`send ${e.id}: unknown network cause`);
     if (e.causa_red !== null && e.resp_b64 !== null) fallo(`send ${e.id}: a network cause next to a stored body`);
     if (!x || e.tipo !== x.tipo || e.sonda !== x.sonda || e.n !== x.n) {
@@ -360,7 +364,7 @@ async function verificarSinRed(s2, claves) {
     } else if (e.hook_token !== null) fallo(`send ${e.id}: decoy token on another class`);
   });
   for (const h of r2.hook_hits) {
-    if (camposDe(h) !== "at,token" || !tokens.has(h.token) || !iso.test(String(h.at))) fallo("decoy hit that belongs to no send of this record");
+    if (camposDe(h) !== "at,token" || !tokens.has(h.token) || !iso.test(h.at)) fallo("decoy hit that belongs to no send of this record");
   }
   if (new Set(r2.hook_hits.map((h) => h.token)).size !== r2.hook_hits.length) fallo("repeated decoy hit");
   const recomputados = calcularVeredictos({
@@ -371,9 +375,9 @@ async function verificarSinRed(s2, claves) {
   let veredictos_ok = true;
   for (const v of recomputados) {
     const reg = r2.veredictos.find((x) => x.sonda === v.sonda);
-    if (!reg || reg.veredicto !== v.veredicto || reg.causa !== v.causa) {
+    if (!reg || canon(reg) !== canon(v)) {
       veredictos_ok = false;
-      problemas.push(`probe ${v.sonda}: recorded verdict ${reg?.veredicto ?? "(missing)"} but the rules give ${v.veredicto}`);
+      problemas.push(`probe ${v.sonda}: recorded ${reg?.veredicto ?? "(missing)"} / ${reg?.causa ?? "no cause"} but the rules give ${v.veredicto} / ${v.causa ?? "no cause"}`);
     }
   }
   if (r2.veredictos.length !== recomputados.length) {
@@ -427,7 +431,7 @@ if (ok) {
   console.log(`Record integrity: valid; this does not evaluate the security of the system. Type: ${r.tipo}.`);
   console.log(t(`${p.titulo}
 ${p.cuerpo}`));
-  console.log("Not recomputed, our statement only: decoy hits and network failures, which leave no bytes.");
+  console.log("Our statement only, not recomputable: decoy hits, network failures, status codes and content types.");
   for (const v of r.recomputados) console.log(`${t(v.sonda)}  ${ETIQUETA[v.veredicto] ?? t(v.veredicto)}${v.causa ? `  ${t(v.causa)}` : ""}`);
 } else {
   console.log("This record does not verify. Do not rely on anything it says.");

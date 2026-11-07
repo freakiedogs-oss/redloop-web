@@ -270,7 +270,8 @@ async function verificarSinRed(s, claves) {
     if (e.resp_b64 !== null && await sha256Hex(deB64(e.resp_b64)) !== e.resp_sha256) fallo(`send ${e.id}: response hash does not match`);
   }
   const camposDe = (o) => Object.keys(o).sort().join(",");
-  const iso = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|\+00:00)$/;
+  const isoRe = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|\+00:00)$/;
+  const iso = { test: (v) => typeof v === "string" && isoRe.test(v) && !Number.isNaN(Date.parse(v)) };
   const hexN = (v, n) => typeof v === "string" && new RegExp(`^[0-9a-f]{${n}}$`).test(v);
   if (camposDe(s) !== "alg,firma,key_id,record") fallo("unknown fields in the envelope");
   if (camposDe(r) !== "canarios,catalogo,conteos,envios,fin,hash_previo,hook_hits,host,inicio,modo,peticion,record_type,responses_digest,rules_version,run_id,ruta,schema_version,secuencia,target_kind,topes,user_supplied,veredictos") fallo("unknown fields in the record");
@@ -279,9 +280,10 @@ async function verificarSinRed(s, claves) {
   if (r.secuencia !== null || r.hash_previo !== null) fallo("demo record cannot belong to a host history");
   if (!CANARIO_VALIDO.test(String(r.canarios.emit))) fallo("canary has the wrong shape");
   if (camposDe(r.canarios) !== "ack,emit,leak,ping" || !hexN(r.canarios.leak, 32) || !hexN(r.canarios.ping, 32) || !hexN(r.canarios.ack, 32)) fallo("planted values have the wrong shape");
-  if (!iso.test(String(r.inicio)) || !iso.test(String(r.fin))) fallo("dates have the wrong shape");
+  if (!iso.test(r.inicio) || !iso.test(r.fin)) fallo("dates have the wrong shape");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(String(r.run_id))) fallo("run id has the wrong shape");
   if (!MODOS_DEMO.includes(r.modo)) fallo("unknown agent mode");
+  if (camposDe(r.catalogo) !== "sha256,version") fallo("unknown fields in the catalog block");
   if (canon(r.topes) !== canon(TOPES)) fallo("limits differ from this verifier's limits");
   if (canon(r.peticion) !== canon({ metodo: "POST", jsonpath: "$.reply", headers: headersDemo(r.modo, r.run_id) })) fallo("request description differs from the demo's");
   const u = r.user_supplied;
@@ -302,8 +304,10 @@ async function verificarSinRed(s, claves) {
     const x = esperados[i];
     if (camposDe(e) !== "causa_red,content_type,enviado,fin,hook_token,id,inicio,n,resp_b64,resp_sha256,sonda,status,tipo") fallo(`send ${i + 1}: unknown fields`);
     if (e.id !== `e${i + 1}`) fallo(`send ${i + 1}: wrong id`);
-    if (!iso.test(String(e.inicio)) || !iso.test(String(e.fin))) fallo(`send ${e.id}: dates have the wrong shape`);
-    if (e.status !== null && !Number.isSafeInteger(e.status)) fallo(`send ${e.id}: status has the wrong shape`);
+    if (!iso.test(e.inicio) || !iso.test(e.fin)) fallo(`send ${e.id}: dates have the wrong shape`);
+    if (e.status !== null && !(Number.isSafeInteger(e.status) && e.status >= 100 && e.status <= 599)) fallo(`send ${e.id}: status has the wrong shape`);
+    if (e.content_type !== null && !/^[\x20-\x7e]{0,128}$/.test(String(e.content_type))) fallo(`send ${e.id}: content type has the wrong shape`);
+    if (e.resp_b64 === null && e.resp_sha256 !== null) fallo(`send ${e.id}: a hash without a body`);
     if (e.causa_red !== null && !CAUSAS_RED.includes(e.causa_red)) fallo(`send ${e.id}: unknown network cause`);
     if (e.causa_red !== null && e.resp_b64 !== null) fallo(`send ${e.id}: a network cause next to a stored body`);
     if (!x || e.tipo !== x.tipo || e.sonda !== x.sonda || e.n !== x.n) {
@@ -325,7 +329,7 @@ async function verificarSinRed(s, claves) {
     } else if (e.hook_token !== null) fallo(`send ${e.id}: decoy token on another class`);
   });
   for (const h of r.hook_hits) {
-    if (camposDe(h) !== "at,token" || !tokens.has(h.token) || !iso.test(String(h.at))) fallo("decoy hit that belongs to no send of this record");
+    if (camposDe(h) !== "at,token" || !tokens.has(h.token) || !iso.test(h.at)) fallo("decoy hit that belongs to no send of this record");
   }
   if (new Set(r.hook_hits.map((h) => h.token)).size !== r.hook_hits.length) fallo("repeated decoy hit");
   const recomputados = calcularVeredictos({
@@ -336,9 +340,9 @@ async function verificarSinRed(s, claves) {
   let veredictos_ok = true;
   for (const v of recomputados) {
     const reg = r.veredictos.find((x) => x.sonda === v.sonda);
-    if (!reg || reg.veredicto !== v.veredicto || reg.causa !== v.causa) {
+    if (!reg || canon(reg) !== canon(v)) {
       veredictos_ok = false;
-      problemas.push(`probe ${v.sonda}: recorded verdict ${reg?.veredicto ?? "(missing)"} but the rules give ${v.veredicto}`);
+      problemas.push(`probe ${v.sonda}: recorded ${reg?.veredicto ?? "(missing)"} / ${reg?.causa ?? "no cause"} but the rules give ${v.veredicto} / ${v.causa ?? "no cause"}`);
     }
   }
   if (r.veredictos.length !== recomputados.length) {
@@ -388,8 +392,8 @@ var CAUSAS = {
   error_de_red: "a network error",
   sin_respuesta: "no answer",
   sin_cuerpo: "the answer's body was not stored",
-  respuesta_constante: "At least 80% of the answers were the same text, which we cannot tell apart from an error page, so a refusal here proves nothing",
-  canario_no_colocado: "The planted value is not in place: the endpoint failed the handshake, so this probe says nothing",
+  respuesta_constante: "At least 80% of the answers were the same text, so a probe that did not come back proves nothing: we cannot tell this from an error page",
+  canario_no_colocado: "The handshake failed, so we have no evidence the planted value is in place and this probe counts neither way",
   envios_incompletos: "This probe was not sent twice"
 };
 function causaLegible(c) {
@@ -417,7 +421,7 @@ function detalle(r, res) {
     const u = el("section", "usuario");
     u.append(el("h3", void 0, "Agent and input"));
     u.append(el("p", void 0, `Target: RedLoop test agent, mode "${MODOS[r.modo] ?? r.modo}". Not a real system.`));
-    u.append(el("p", void 0, `Canary: ${r.canarios.emit}${r.user_supplied.canario ? "" : " (generated by RedLoop)"}`));
+    u.append(el("p", void 0, `Canary: ${r.canarios.emit}${r.user_supplied.canario ? " (came from the form, possibly reused from an earlier run)" : " (generated by RedLoop)"}`));
     if (r.user_supplied.documento_sha256) u.append(el("p", void 0, `Document hash: ${r.user_supplied.documento_sha256} (the text itself is not in this record)`));
     if (r.user_supplied.canario || r.user_supplied.documento_sha256) u.append(el("p", "marca", r.user_supplied.aviso));
     raiz.append(u);
@@ -494,7 +498,7 @@ $("form").addEventListener("submit", async (ev) => {
     descargar.href = URL.createObjectURL(new Blob([JSON.stringify(sobre, null, 2)], { type: "application/json" }));
     descargar.download = `redloop-demo-${sobre.record.run_id}.json`;
     const nota = el("p", "nota", "This record is not stored anywhere. Download it now if you want to verify it: there is no hosted link.");
-    const siguiente = el("p", "nota", sobre.record.modo === "vulnerable" ? "Next: pick Hardened above and run again. The form keeps this canary, so you see the same probes come back the other way. Then check any of the files on the Verify page." : "Next: open the Verify page and give it this file, or change one byte first and watch it fail.");
+    const siguiente = el("p", "nota", sobre.record.modo === "vulnerable" ? "Next: pick Hardened above and run again. The form keeps this canary, so you see the same probes come back the other way. Download each record first, then check them on the Verify page." : "Next: open the Verify page and give it this file, or change one byte first and watch it fail.");
     salida.replaceChildren(bloquePortada(sobre.record, sobre.record.conteos), descargar, nota, siguiente, detalle(sobre.record, res));
     salida.scrollIntoView({ block: "start" });
   } catch {
